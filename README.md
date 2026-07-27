@@ -10,7 +10,7 @@ Use it to monitor server health, view players, manage moderation actions, send a
 
 - **Live demo:** https://palworld-server-dashboard.vercel.app/
 - **Documentation:** https://palworld-server-dashboard.vercel.app/docs
-- **Container image:** `ghcr.io/rnz01/palworld-server-dashboard:latest`
+- **Container image:** `ghcr.io/rnz01/palworld-server-dashboard:latest` (or pin a release tag like `:0.1.0`)
 
 ## Demo
 

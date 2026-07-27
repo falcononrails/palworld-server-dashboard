@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  release:
+    types:
+      - published
   workflow_dispatch:
 
 env:
@@ -45,9 +48,19 @@ jobs:
         run: |
           image="${REGISTRY}/${GITHUB_REPOSITORY,,}"
           short_sha="${GITHUB_SHA::7}"
+          version="${GITHUB_REF_NAME#v}"
+          tags="${image}:latest-${{ matrix.suffix }},${image}:sha-${short_sha}-${{ matrix.suffix }}"
+
+          if [ "${GITHUB_EVENT_NAME}" = "release" ] || [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            tags="${tags},${image}:${version}-${{ matrix.suffix }},${image}:rolling-${{ matrix.suffix }}"
+          else
+            version="${short_sha}"
+          fi
+
           echo "image=${image}" >> "$GITHUB_OUTPUT"
           echo "short_sha=${short_sha}" >> "$GITHUB_OUTPUT"
-          echo "tags=${image}:latest-${{ matrix.suffix }},${image}:sha-${short_sha}-${{ matrix.suffix }}" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tags=${tags}" >> "$GITHUB_OUTPUT"
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -62,6 +75,8 @@ jobs:
             org.opencontainers.image.description=Browser-based admin dashboard for managing and monitoring Palworld dedicated servers through the REST API.
             org.opencontainers.image.licenses=MIT
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.prep.outputs.version }}
           cache-from: type=gha,scope=${{ matrix.suffix }}
           cache-to: type=gha,mode=max,scope=${{ matrix.suffix }}
 
@@ -86,8 +101,13 @@ jobs:
         run: |
           image="${REGISTRY}/${GITHUB_REPOSITORY,,}"
           short_sha="${GITHUB_SHA::7}"
-          docker buildx imagetools create \
-            --tag "${image}:latest" \
-            --tag "${image}:sha-${short_sha}" \
-            "${image}:sha-${short_sha}-amd64" \
-            "${image}:sha-${short_sha}-arm64"
+          version="${GITHUB_REF_NAME#v}"
+          tags=(--tag "${image}:latest" --tag "${image}:sha-${short_sha}")
+          sources=("${image}:sha-${short_sha}-amd64" "${image}:sha-${short_sha}-arm64")
+
+          if [ "${GITHUB_EVENT_NAME}" = "release" ] || [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            tags+=(--tag "${image}:${version}" --tag "${image}:rolling")
+            sources=("${image}:${version}-amd64" "${image}:${version}-arm64")
+          fi
+
+          docker buildx imagetools create "${tags[@]}" "${sources[@]}"

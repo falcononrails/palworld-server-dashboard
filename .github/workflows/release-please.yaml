@@ -1,0 +1,27 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Release Please
+        id: release
+        uses: googleapis/release-please-action@v5
+
+      - name: Publish release image
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ steps.release.outputs.tag_name }}
+        run: gh workflow run publish-docker-image.yml --ref "$TAG_NAME"
