@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/RNZ01/palworld-server-dashboard/compare/0.1.1...0.1.2) (2026-07-27)
+
+
+### Miscellaneous Chores
+
+* fix release action ([c2dbed6](https://github.com/RNZ01/palworld-server-dashboard/commit/c2dbed66de844d806a87c8bee3e3f861dc871387))
+
 ## [0.1.1](https://github.com/RNZ01/palworld-server-dashboard/compare/0.1.0...0.1.1) (2026-07-27)
 
 
