@@ -24,4 +24,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG_NAME: ${{ steps.release.outputs.tag_name }}
-        run: gh workflow run publish-docker-image.yml --ref "$TAG_NAME"
+        run: gh workflow run publish-docker-image.yml --repo "${{ github.repository }}" --ref "$TAG_NAME"
