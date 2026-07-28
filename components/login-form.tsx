@@ -114,23 +114,22 @@ async function validateServerConnection(config: LoginConfigPayload, signal?: Abo
 // Resolve the panel access tier for the entered password. Passwords are only
 // compared server-side; the response carries the tier and nothing else.
 async function fetchAccessTier(password: string): Promise<AccessTier | 'invalid'> {
-  try {
-    const response = await fetch('/api/auth-tier', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
-      cache: 'no-store',
-    })
+  const response = await fetch('/api/auth-tier', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password }),
+    cache: 'no-store',
+  })
 
-    if (!response.ok) {
-      return 'invalid'
+  if (!response.ok) {
+    if (response.status === 429) {
+      throw new Error('Too many attempts. Try again later.')
     }
-
-    const data = (await response.json()) as { tier?: unknown }
-    return data.tier === 'admin' || data.tier === 'mod' ? data.tier : 'invalid'
-  } catch {
-    return 'invalid'
+    throw new Error(await getApiErrorMessage(response, 'Could not verify panel password.'))
   }
+
+  const data = (await response.json()) as { tier?: unknown }
+  return data.tier === 'admin' || data.tier === 'mod' ? data.tier : 'invalid'
 }
 
 export function LoginForm() {
