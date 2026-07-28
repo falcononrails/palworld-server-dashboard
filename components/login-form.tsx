@@ -279,17 +279,15 @@ export function LoginForm() {
     }
 
     try {
+      const tierResult = await fetchAccessTier(normalizedConfig.adminPassword)
+      if (tierResult === 'invalid') {
+        throw new Error('Unauthorized')
+      }
+
       await validateServerConnection(normalizedConfig)
 
-      // validateServerConnection succeeded, so the password is live. Resolve
-      // which tier it authenticated as; 'invalid' at this point means a
-      // directly-entered real game credential the panel env does not list —
-      // that keeps full admin access (passthrough), same as before.
-      const tierResult = await fetchAccessTier(normalizedConfig.adminPassword)
-      const accessTier: AccessTier = tierResult === 'mod' ? 'mod' : 'admin'
-
       sessionStorage.setItem(LOGIN_TRANSITION_SESSION_KEY, '1')
-      setConfig({ ...normalizedConfig, accessTier }, { rememberMe })
+      setConfig({ ...normalizedConfig, accessTier: tierResult }, { rememberMe })
     } catch (err) {
       const rawMessage = err instanceof Error ? err.message : 'Unknown error'
       const message = toFriendlyValidationMessage(rawMessage)

@@ -154,7 +154,12 @@ async function proxyPalworldRequest(request: NextRequest, { params }: RouteConte
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: `Server responded with ${response.status}: ${text}` },
+        {
+          error:
+            response.status === 401
+              ? 'Palworld REST admin password is incorrect (check PALWORLD_ADMIN_PASSWORD).'
+              : `Server responded with ${response.status}: ${text}`,
+        },
         { status: response.status }
       )
     }
