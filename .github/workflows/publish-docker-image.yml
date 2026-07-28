@@ -49,10 +49,13 @@ jobs:
           image="${REGISTRY}/${GITHUB_REPOSITORY,,}"
           short_sha="${GITHUB_SHA::7}"
           version="${GITHUB_REF_NAME#v}"
-          tags="${image}:latest-${{ matrix.suffix }},${image}:sha-${short_sha}-${{ matrix.suffix }}"
+          tags="${image}:sha-${short_sha}-${{ matrix.suffix }}"
 
           if [ "${GITHUB_EVENT_NAME}" = "release" ] || [ "${GITHUB_REF_TYPE}" = "tag" ]; then
             tags="${tags},${image}:${version}-${{ matrix.suffix }},${image}:rolling-${{ matrix.suffix }}"
+          elif [ "${GITHUB_REF_NAME}" = "main" ]; then
+            tags="${tags},${image}:latest-${{ matrix.suffix }}"
+            version="${short_sha}"
           else
             version="${short_sha}"
           fi
@@ -102,12 +105,14 @@ jobs:
           image="${REGISTRY}/${GITHUB_REPOSITORY,,}"
           short_sha="${GITHUB_SHA::7}"
           version="${GITHUB_REF_NAME#v}"
-          tags=(--tag "${image}:latest" --tag "${image}:sha-${short_sha}")
+          tags=(--tag "${image}:sha-${short_sha}")
           sources=("${image}:sha-${short_sha}-amd64" "${image}:sha-${short_sha}-arm64")
 
           if [ "${GITHUB_EVENT_NAME}" = "release" ] || [ "${GITHUB_REF_TYPE}" = "tag" ]; then
             tags+=(--tag "${image}:${version}" --tag "${image}:rolling")
             sources=("${image}:${version}-amd64" "${image}:${version}-arm64")
+          elif [ "${GITHUB_REF_NAME}" = "main" ]; then
+            tags+=(--tag "${image}:latest")
           fi
 
           docker buildx imagetools create "${tags[@]}" "${sources[@]}"
