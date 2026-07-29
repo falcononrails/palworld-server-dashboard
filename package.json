@@ -14,10 +14,11 @@
     "start": "next start",
     "postinstall": "node scripts/patch-nextra-theme-docs.mjs",
     "check:player-activity": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/player-activity-self-check.mts",
+    "check:server-update": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/server-update-self-check.mts",
     "typegen": "node -e \"require('node:fs').rmSync('.next', { recursive: true, force: true })\" && next typegen",
     "lint": "npm run typecheck",
     "typecheck": "npm run typegen && tsc --noEmit",
-    "check": "npm run typecheck && npm run build"
+    "check": "npm run check:player-activity && npm run check:server-update && npm run typecheck && npm run build"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",
