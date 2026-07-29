@@ -1,6 +1,6 @@
 {
   "name": "palworld-server-dashboard",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "description": "Browser-based dashboard for Palworld server monitoring, moderation, and live operations.",
   "license": "MIT",

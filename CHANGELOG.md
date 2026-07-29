@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/RNZ01/palworld-server-dashboard/compare/0.1.2...0.1.3) (2026-07-29)
+
+
+### Miscellaneous Chores
+
+* add AGENTS.md ([a8b2293](https://github.com/RNZ01/palworld-server-dashboard/commit/a8b2293ea0bbe15f298a81a7b9a4ff8ce5f5ea58))
+
 ## [0.1.2](https://github.com/RNZ01/palworld-server-dashboard/compare/0.1.1...0.1.2) (2026-07-27)
 
 
