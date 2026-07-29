@@ -708,11 +708,11 @@ export function ServerUpdateCard() {
           </div>
         )}
 
-        <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="grid grid-cols-1 gap-2">
           <Button
             type="button"
             variant="outline"
-            className="flex-1"
+            className="w-full min-w-0"
             disabled={!configured || active || requesting !== null}
             onClick={() => requestAction('check')}
           >
@@ -725,7 +725,7 @@ export function ServerUpdateCard() {
           </Button>
           <Button
             type="button"
-            className="flex-1"
+            className="w-full min-w-0"
             disabled={!configured || active || requesting !== null || status?.updateAvailable !== true}
             onClick={() => setConfirmOpen(true)}
           >
