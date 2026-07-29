@@ -114,23 +114,22 @@ async function validateServerConnection(config: LoginConfigPayload, signal?: Abo
 // Resolve the panel access tier for the entered password. Passwords are only
 // compared server-side; the response carries the tier and nothing else.
 async function fetchAccessTier(password: string): Promise<AccessTier | 'invalid'> {
-  try {
-    const response = await fetch('/api/auth-tier', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
-      cache: 'no-store',
-    })
+  const response = await fetch('/api/auth-tier', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password }),
+    cache: 'no-store',
+  })
 
-    if (!response.ok) {
-      return 'invalid'
+  if (!response.ok) {
+    if (response.status === 429) {
+      throw new Error('Too many attempts. Try again later.')
     }
-
-    const data = (await response.json()) as { tier?: unknown }
-    return data.tier === 'admin' || data.tier === 'mod' ? data.tier : 'invalid'
-  } catch {
-    return 'invalid'
+    throw new Error(await getApiErrorMessage(response, 'Could not verify panel password.'))
   }
+
+  const data = (await response.json()) as { tier?: unknown }
+  return data.tier === 'admin' || data.tier === 'mod' ? data.tier : 'invalid'
 }
 
 export function LoginForm() {
@@ -279,17 +278,15 @@ export function LoginForm() {
     }
 
     try {
+      const tierResult = await fetchAccessTier(normalizedConfig.adminPassword)
+      if (tierResult === 'invalid') {
+        throw new Error('Unauthorized')
+      }
+
       await validateServerConnection(normalizedConfig)
 
-      // validateServerConnection succeeded, so the password is live. Resolve
-      // which tier it authenticated as; 'invalid' at this point means a
-      // directly-entered real game credential the panel env does not list —
-      // that keeps full admin access (passthrough), same as before.
-      const tierResult = await fetchAccessTier(normalizedConfig.adminPassword)
-      const accessTier: AccessTier = tierResult === 'mod' ? 'mod' : 'admin'
-
       sessionStorage.setItem(LOGIN_TRANSITION_SESSION_KEY, '1')
-      setConfig({ ...normalizedConfig, accessTier }, { rememberMe })
+      setConfig({ ...normalizedConfig, accessTier: tierResult }, { rememberMe })
     } catch (err) {
       const rawMessage = err instanceof Error ? err.message : 'Unknown error'
       const message = toFriendlyValidationMessage(rawMessage)
